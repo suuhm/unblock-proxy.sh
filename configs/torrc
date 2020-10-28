@@ -1,0 +1,14 @@
+RunAsDaemon 1
+TransPort 0.0.0.0:4433
+SocksPort 0.0.0.0:4444
+ClientOnly
+AutomapHostsSuffixes .onion,.exit
+AutomapHostsOnResolve 1
+VirtualAddrNetwork 10.192.0.0/10
+DNSPort 127.0.0.1:5533
+#for zattoo example
+EntryNodes {ch}
+ExitNodes {ch}
+StrictNodes 1
+StrictEntryNodes 1
+StrictExitNodes 1
