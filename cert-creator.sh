@@ -1,6 +1,6 @@
 #! /bin/bash
 
-_SSL_BASE_DIR=/opt/unblock-proxy/certs
+_SSL_BASE_DIR=/opt/unblock-proxy.sh/certs
 _SSL_PARASED="cert=$_SSL_BASE_DIR/squidCRT.pem key=$_SSL_BASE_DIR/squidPK.key generate-host-certificates=on dynamic_cert_mem_cache_size=4MB options=SINGLE_DH_USE,SINGLE_ECDH_USE tls-dh=$_SSL_BASE_DIR/squidDH.pem"
 
 cat << EOM > ./certs/squid_ssl_ca.conf
@@ -51,8 +51,8 @@ DNS.1 = $(hostname -f)
 DNS.2 = www.$(hostname -f)
 EOM
 
-echo "[*] Creating Initial squid-certs"
-
+echo -e "\n\e[1m\e[94m[*] Creating Initial squid-certs\e[39m\e[0m\e[0m"
+sleep 3
 cd $_SSL_BASE_DIR
 
 ## 5Jahre
@@ -94,5 +94,6 @@ openssl x509 -in squidCA.pem -outform DER -out squidCA.der
 #templating
 echo "[*] Modify the squid template.."
 sed "s;_SSL_PARAMS_;$_SSL_PARASED;g" -i ../configs/squid.conf
-
+sleep 2
+echo -e "\n\e[1m\e[94m[*] DONE! \e[39m\e[0m\e[0m"
 #exit 0
