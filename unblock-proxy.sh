@@ -31,7 +31,7 @@ _COMMAND_MODE="$1"
 _REGEX="(-v|-h|-R|-C|--help|--version|--reset|--proxycheck)"
 _MMTP=${1%%-*} #left of "-" must be _c_m
 
-_BASE_DIR=/opt/unblock-proxy/
+_BASE_DIR=/opt/unblock-proxy.sh/
 _CONF_R=${_BASE_D%un*} #/opt/
 
 _SNIPROXY_CONF=${_BASE_DIR}configs/sniproxy.conf
@@ -72,7 +72,8 @@ _usage()
 	
 	-i, --in-if=            Sets the in-interface Device.
 	-o, --out-if=           Sets the out-interface Device.
-	-S, --ssh-socks         Set own Server as Parent Socks-Proxy over SSH-tunnel.
+	-S, --ssh-socks        	Set own Server as Parent Socks-Proxy over SSH-tunnel.
+	                        (Can't be use with tor-Engine!)
 	-R, --reset             Resets all the IPTABLES and MASQ Entries.
 	-C, --proxycheck        Just scans/checks the Proxies in ($_PROXY_FILE).
 	
@@ -85,15 +86,16 @@ _usage()
 
 _version()
 {	
-	echo -e "\n\e[1m\e[40m\e[94m   __  __ _   __ ____   __    ____   ______ __ __        ____   ____   ____  _  ____  __"
-	echo -e "  / / / // | / // __ ) / /   / __ \ / ____// //_/       / __ \ / __ \ / __ \| |/ /\ \/ /   "
-	echo -e " / / / //  |/ // __  |/ /   / / / // /    / ,<  ____»_ / /_/ // /_/ // / / /|   /  \  /    "
-	echo -e "/ /_/ // /|  // /_/ // /___/ /_/ // /___ / /| |/_««__// ____// _, _// /_/ //   |   / /\e[5m\e[25m    "
-	echo -e "\____//_/ |_//_____//_____/\____/ \____//_/ |_|      /_/    /_/ |_| \____//_/|_|  /_(\e[5m»)\e[25m   "
-	echo -e "\e[39m\e[49m                                                                               "	                                                                                          
-    echo -e "\tUNBLOCK-PROXY.SH Ver. 0.2.1 for Linux"
-    echo -e "\tCopyright 2020 - by suuhm - suuhmer@coldwareveryday.com"
-    echo -e "\tThe Swiss Army knife to avoid geoblocking in VoD and censorship!\n\e[0m"  
+	echo -e "\n\e[1m\e[40m\e[94m   __  __ _   __ ____   __    ____   ______ __ __        ____   ____   ____  _  ____  __ "
+	echo -e "  / / / // | / // __ ) / /   / __ \ / ____// //_/       / __ \ / __ \ / __ \| |/ /\ \/ / " 
+	echo -e " / / / //  |/ // __  |/ /   / / / // /    / ,<  ____»_ / /_/ // /_/ // / / /|   /  \  /  " 
+	echo -e "/ /_/ // /|  // /_/ // /___/ /_/ // /___ / /| |/_««__// ____// _, _// /_/ //   |   / /\e[5m\e[25m   "
+	echo -e "\____//_/ |_//_____//_____/\____/ \____//_/ |_|      /_/    /_/ |_| \____//_/|_|  /_(\e[5m»)\e[25m  "
+	echo -e "                                                                                         "
+	echo -e "\e[39m\e[49m                                                                               "
+    	echo -e "\tUNBLOCK-PROXY.SH Ver. 0.2.1 for Linux"
+    	echo -e "\tCopyright 2020 - by suuhm - suuhmer@coldwareveryday.com"
+    	echo -e "\tThe Swiss Army knife to avoid geoblocking in VoD and censorship!\n\e[0m"  
 }
 
 _run_tor()
@@ -103,19 +105,27 @@ _run_tor()
 	if [[ $BIN_CHK ]]; then
 	    $BIN_CHK -f "$_TOR_CONF"
 	else
-	    echo "[!!] Command not found!"
+	    echo "[!!] Command $BIN_CHK not found!"
+	    echo "Try to search/install like: apt-get install $BIN_CHK"
 	  	exit 111
 	fi
 }
 
 _run_squid()
-{	
+{
+	PATH=$PATH:/usr/local/squid/sbin/:/usr/local/squid/bin/	
 	BIN_CHK=$(command -v squid)
 	  
 	if [[ $BIN_CHK ]]; then
 	    $BIN_CHK -f $_SQUID_CONF
+	    squid -v | grep -E "with-openssl|enable-ssl-crtd"
+	    if [[ $? == 1 ]]; then 
+	    	echo "Need to compiled with with-openssl and enable-ssl-crtd!"
+	    	exit 122
+	    fi
 	else
-	    echo "[!!] Command not found!"
+	    echo "[!!] Command $BIN_CHK not found!"
+	    echo "Try to search/install like: apt-get install $BIN_CHK"
 	  	exit 112
 	fi
 }
@@ -127,7 +137,8 @@ _run_privoxy()
 	if [[ $BIN_CHK ]]; then
 	    $BIN_CHK $_PRIVOXY_CONF
 	else
-	    echo "[!!] Command not found!"
+	    echo "[!!] Command $BIN_CHK not found!"
+	    echo "Try to search/install like: apt-get install $BIN_CHK"
 	  	exit 113
 	fi
 }
@@ -139,7 +150,8 @@ _run_redsocks()
     if [[ $BIN_CHK ]]; then
 		$BIN_CHK -c $_REDSOCKS_CONF
 	else
-	    echo "[!!] Command not found!"
+	    echo "[!!] Command $BIN_CHK not found!"
+	    echo "Try to search/install like: apt-get install $BIN_CHK"
 	  	exit 114
 	fi
 }
@@ -158,7 +170,8 @@ _run_proxychains()
 		cp -a $_PCHAINS_CONF ./
 	    $BIN_CHKCH ${PCSNIC} -f
 	else
-	    echo "[!!] Commands not found!"
+	    echo "[!!] Commands $BIN_CHKCH and $BIN_CHKSNI not found!"
+	    echo "Try to search/install like: apt-get install $BIN_CHKCH $BIN_CHKSNI"
 	  	exit 115
 	fi
 }
@@ -170,7 +183,8 @@ _run_sniproxy()
     if [[ $BIN_CHK && $_PCPARA == "SDNS" ]]; then
 		$BIN_CHK -c ${_SNIPROXY_CONF}
 	else
-	    echo "[!!] Command not found!"
+	    echo "[!!] Command $BIN_CHK not found!"
+	    echo "Try to search/install like: apt-get install $BIN_CHK"
 	  	exit 116
 	fi
 }
@@ -182,7 +196,8 @@ _run_dnsmasq()
     if [[ $BIN_CHK ]]; then
 		$BIN_CHK -C $_DNS_CONF
 	else
-	    echo "[!!] Command not found!"
+	    echo "[!!] Command $BIN_CHK not found!"
+	    echo "Try to search/install like: apt-get install $BIN_CHK"
 	  	exit 117
 	fi
 }
@@ -227,17 +242,17 @@ _get_proxy()
 			_PPROTO=`awk '{print $1}' <<<$PROX`
 			#$(nc -w 7 -z -v $_PIP $_PPORT 2>&1 | grep open)
 			printf "[~ $((_counter=$_counter+1))] Testing Proxy: $_PIP:$_PPORT $_PPROTO"
-			curl -m 42 --connect-timeout 90 -x $_PPROTO://$_PIP:$_PPORT -fsL https://proxycheck.coldwareveryday.com >/dev/null 2>&1
+			curl -m 32 --connect-timeout 70 -x $_PPROTO://$_PIP:$_PPORT -fsL https://proxycheck.coldwareveryday.com >/dev/null 2>&1
 			
 			if [[ $? == 0 ]]; then
 				printf " \e[32m[seems to work :)]\n[*] FOUND! ($_PIP)\n\e[39m\e[0m"
-				CONT=1
+				CONT=1; sleep 2
 				[ -z $1 ] && break
 			else
 				printf " \e[31m[bad proxy :(]\n\e[39m\e[0m"
 				sleep 2
 			fi
-		done <<< $PROXY_ARRAY
+		done <<< "$PROXY_ARRAY"
 		
 		if [[ $CONT < 1 ]]; then
 			echo "[!!] No Proxies found or working..."
@@ -276,7 +291,7 @@ _set_ssh_socks()
 _kill_ngines()
 {
 	for PID in tor squid privoxy redsocks proxychains sniproxy dnsmasq; do
-		TP=$(ps aux | grep $PID | grep -v grep | awk '{print $2}')
+		TP=$(ps aux | grep -E "\ $PID|\/$PID" | grep -v grep | awk '{print $2}')
 		printf "\n[X] Killing process: $PID: "
 		for I in $TP; do
 			printf ">> kill pid -> $I "
@@ -376,6 +391,7 @@ _set_ngin_conf()
 	        		## SET SSL CERTS
 	        		if [[ ! -d ${_BASE_DIR}certs ]]; then
 						mkdir ${_BASE_DIR}certs
+						cd ${_BASE_DIR}
 						. cert-creator.sh
 					fi
 	        		
