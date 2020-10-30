@@ -1,5 +1,5 @@
 ![Thumb](/img/unblock-version.gif)
-### A "Swiss Army proxy-knife" to avoid geoblocking in VoD and censorship!
+### A "Swiss Army proxy-knife" to avoid geoblocking in Video on Demand and censorship!
 
 # Background 
 This Script uses a List of (Free)-Proxies and Domains that allows you to set up unrestricted access to streaming content on your smart-TV, Kodi, Emby Mediaserver and other devices to watch your media region-free like:
@@ -89,6 +89,15 @@ sudo ln -s ~/redsocks/redsocks /usr/bin/
 sudo apt install proxychains
 ```
 
+### 3. Put your wished Proxy in the proxies.lst file. 
+#### (Please google for free proxy Server)
+
+### 4. Put your wished Domain in the domains.lst file. 
+#### (There're already a few useful ones inside)
+
+### 5. Run the unblock-proxy.sh (See examples below) and Have fun! 
+
+
 # Options 
 ```
 Usage: unblock-proxy.sh main-mode proxy-engine [options]>   
@@ -148,7 +157,7 @@ unblock-proxy.sh dns -s --ssh-socks --debug
 
 #### Using Smart DNS Mode with proxychains Engine, using specific Network-Card and pull off Debug-infos
 ```
-unblock-proxy.sh dns --proxychains --in-if=eth2 -o wlan0 --d
+unblock-proxy.sh dns --proxychains --in-if=eth2 -o wlan0 -d
 ```
 
 #### Resetting and Check your Proxylist
@@ -165,12 +174,12 @@ When you find bugs, please let me know.
 Thanks.
 
 # -
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation
+	This program is free software; you can redistribute it and/or modify it under
+	the terms of the GNU General Public License as published by the Free Software
+	Foundation
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-details.
+	This program is distributed in the hope that it will be useful, but WITHOUT
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+	FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+	details.
 
