@@ -378,7 +378,6 @@ _set_ngin_conf()
 	_DNS_CONF=${TMP_CONF}/dnsmasq.conf
 	_PCHAINS_CONF=${TMP_CONF}/proxychains.conf
 
-
 	case "$_PROX_ENGINE" in                                            
 	        tor)                                   
 	        		#_run_tor; 
