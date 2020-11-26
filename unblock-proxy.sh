@@ -163,11 +163,11 @@ _run_proxychains()
     PCSNIC="sniproxy -c ${_SNIPROXY_CONF}"
       
     if [[ $BIN_CHKCH && $BIN_CHKSNI && $_PCPARA =~ SNIT|SDNS && -z $_DEBUG_VERBOSE ]]; then
-        cp -a $_PCHAINS_CONF ./
+        cp -a $_PCHAINS_CONF ${_BASE_DIR}/ && cd ${_BASE_DIR}/
         sed 's/#qui/qui/g' -i ./proxychains.conf
         $BIN_CHKCH ${PCSNIC} -f &
     elif [[ $BIN_CHKCH && $BIN_CHKSNI && $_PCPARA =~ SNIT|SDNS && $_DEBUG_VERBOSE > 0 ]]; then
-        cp -a $_PCHAINS_CONF ./
+        cp -a $_PCHAINS_CONF ${_BASE_DIR}/ && cd ${_BASE_DIR}/
         $BIN_CHKCH ${PCSNIC} -f
     else
         echo "[!!] Commands $BIN_CHKCH and $BIN_CHKSNI not found!"
@@ -208,7 +208,7 @@ _get_blacklist()
         BL_ARRAY=`grep -v -E "^#|^$" $_BL_FILE`
         echo -e "\n\e[1m\e[94m[*] Blacklist found at $_BL_FILE\e[39m\e[0m"
     else
-        echo "[!!] No Blacklist found at $_BL_FILE, exit now.."
+        echo "[!!] No Blacklist-file found at $_BL_FILE, exit now.."
         exit 166
     fi
 }
@@ -256,7 +256,7 @@ _get_proxy()
         
         if [[ $CONT < 1 ]]; then
             echo "[!!] No Proxies found or working..."
-            exit 169
+            exit 168
         fi
         
     elif [[ $_SSH_SOCKS > 0 ]]; then
@@ -266,8 +266,8 @@ _get_proxy()
         _PPROTO="socks5"
         _PROXY_FILE="$_PPROTO $_PIP $_PPORT"
     else
-        echo "[!!] No Domains-file found at $_PROXY_FILE, exit now.."
-        exit 168
+        echo "[!!] No Proxy-file found at $_PROXY_FILE, exit now.."
+        exit 169
     fi
 }
 
@@ -485,19 +485,19 @@ if [[ "$_MMTP" != '' ]]; then
     shift 1
 else
     if ! [[ $_COMMAND_MODE =~ $_REGEX ]]; then 
-        _usage ; exit 13 
+        _usage ; exit 12
     fi
 fi
 
 GETOPT=`getopt -T`
 if [[ $? != 4 && $? != 1 ]]; then
     echo "Error 111: GETOPT missing"
-    exit 14
+    exit 13
 fi
 
 _getopt=$(getopt -o tsrpio::SRCvhd --long tor,squid,redsocks,proxychains,in-if::,out-if::ssh-socks,reset,proxycheck,version,help,debug -n $_PROG -- "$@")
 if [[ $? != 0 ]] ; then 
-    echo "bad command line options" >&2 ; exit 15 ; 
+    echo "bad command line options" >&2 ; exit 14 ; 
 fi
 
 eval set -- ${_getopt}
@@ -531,7 +531,7 @@ while true; do
             -i|--in-if)
                     if [[ -z "$2" ]]; then
                         echo -e "Missing device\n" ; _usage
-                        exit 16;
+                        exit 15;
                     else
                         IIF=$2; IF_MSET=1
                         shift 2;
@@ -541,7 +541,7 @@ while true; do
             -o|--out-if)
                     if [[ -z "$2" ]]; then
                         echo -e "Missing device\n" ; _usage
-                        exit 17;
+                        exit 16;
                     else
                         OIF=$2; IF_MSET=1
                         shift 2;
@@ -569,12 +569,17 @@ while true; do
             *)
                     echo "BAD OPTION $1"
                     _usage
-                    exit 23
+                    exit 17
                     ;;
     esac
 done
 
 _version; sleep 3
+
+if [[ $(id -u) != 0 ]]; then 
+    echo "You must be run as root or with sudo"
+    exit 18
+fi
 
 if [[ -z $IF_MSET ]]; then
     _get_interfaces
