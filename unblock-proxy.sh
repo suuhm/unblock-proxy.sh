@@ -32,6 +32,7 @@ _REGEX="(-v|-h|-R|-C|--help|--version|--reset|--proxycheck)"
 _MMTP=${1%%-*} #left of "-" must be _c_m
 
 _BASE_DIR=/opt/unblock-proxy.sh/
+_WEBACP_DIR=${_BASE_DIR}web-acp
 _CONF_R=${_BASE_D%un*} #/opt/
 
 _SNIPROXY_CONF=${_BASE_DIR}configs/sniproxy.conf
@@ -48,6 +49,7 @@ _PIP=0
 _PPORT=0
 _PPROTO=0
 _SSH_SOCKS=0
+_RUN_WEB=0
 
 OIF=enp0s3
 IIF=enp0s3
@@ -74,6 +76,8 @@ _usage()
     -o, --out-if=           Sets the out-interface Device.
     -S, --ssh-socks         Set own Server as Parent Socks-Proxy over SSH-tunnel.
                             (Can't be use with tor-Engine!)
+    -w, --web-admin         Starts a small Webserver-Backend at Port 8383
+                            (Requires php framework >=5.4!)
     -R, --reset             Resets all the IPTABLES and MASQ Entries.
     -C, --proxycheck        Just scans/checks the Proxies in ($_PROXY_FILE).
     
@@ -165,10 +169,10 @@ _run_proxychains()
     if [[ $BIN_CHKCH && $BIN_CHKSNI && $_PCPARA =~ SNIT|SDNS && -z $_DEBUG_VERBOSE ]]; then
         cp -a $_PCHAINS_CONF ${_BASE_DIR}/ && cd ${_BASE_DIR}/
         sed 's/#qui/qui/g' -i ./proxychains.conf
-        $BIN_CHKCH ${PCSNIC} -f &
+        $BIN_CHKCH ${PCSNIC} -f >/dev/null 2>&1 &
     elif [[ $BIN_CHKCH && $BIN_CHKSNI && $_PCPARA =~ SNIT|SDNS && $_DEBUG_VERBOSE > 0 ]]; then
         cp -a $_PCHAINS_CONF ${_BASE_DIR}/ && cd ${_BASE_DIR}/
-        $BIN_CHKCH ${PCSNIC} -f
+        $BIN_CHKCH ${PCSNIC} -f > ${TMP_CONF}/pchains.log 2>&1 &
     else
         echo "[!!] Commands $BIN_CHKCH and $BIN_CHKSNI not found!"
         echo "Try to search/install like: apt-get install $BIN_CHKCH $BIN_CHKSNI"
@@ -199,6 +203,21 @@ _run_dnsmasq()
         echo "[!!] Command $BIN_CHK not found!"
         echo "Try to search/install like: apt-get install $BIN_CHK"
         exit 117
+    fi
+}
+
+_run_webserver()
+{     
+    if [[ -e ${_WEBACP_DIR} && $(command -v php) && -z $(lsof -t -i:8383) ]]; then
+        echo $$ > ${_WEBACP_DIR}/KID
+        nohup php -S 0.0.0.0:8383 -t $_WEBACP_DIR >${_WEBACP_DIR}/web-acp.log 2>&1 &
+    elif [[ $(lsof -t -i:8383) ]]; then
+        echo $$ > ${_WEBACP_DIR}/KID
+        echo "[!~] Webserver is still running. Continue.."
+    else
+        echo "[!!] $_WEBACP_DIR or php-Command not found!"
+        echo "Try to search/install like: apt-get install php"
+        exit 118
     fi
 }
 
@@ -290,6 +309,7 @@ _set_ssh_socks()
 
 _kill_ngines()
 {
+    #kill $(lsof -t -i:8383) #>/dev/null 2>&1
     for PID in tor squid privoxy redsocks proxychains sniproxy dnsmasq; do
         TP=$(ps aux | grep -E "\ $PID|\/$PID" | grep -v grep | awk '{print $2}')
         printf "\n[X] Killing process: $PID: "
@@ -495,7 +515,7 @@ if [[ $? != 4 && $? != 1 ]]; then
     exit 13
 fi
 
-_getopt=$(getopt -o tsrpio::SRCvhd --long tor,squid,redsocks,proxychains,in-if::,out-if::ssh-socks,reset,proxycheck,version,help,debug -n $_PROG -- "$@")
+_getopt=$(getopt -o tsrpio::SwRCvhd --long tor,squid,redsocks,proxychains,in-if::,out-if::ssh-socks,web-admin,reset,proxycheck,version,help,debug -n $_PROG -- "$@")
 if [[ $? != 0 ]] ; then 
     echo "bad command line options" >&2 ; exit 14 ; 
 fi
@@ -550,6 +570,10 @@ while true; do
                     ;;
             -S|--ssh-socks)
                     _SSH_SOCKS=1;
+                    shift  
+                    ;;
+            -w|--web-admin)
+                    _RUN_WEB=1;
                     shift  
                     ;;
             -R|--reset)
@@ -620,12 +644,26 @@ elif [[ $_COMMAND_MODE == 'dns' ]]; then
     \e[39m\e[0m\n\r"
 fi
 
+if [[ $_RUN_WEB == 1 ]]; then
+    _run_webserver
+    
+    echo -e "\e[1m\e[94m
+    ---------------------------------------------------------
+       [*] You can reach the Web-Administation at http://$IPADDR:8383
+    ---------------------------------------------------------
+    \e[39m\e[0m\n\r"
+fi
+
 ## SET OPTIONAL SYSLOG DEBUGGING
-if [[ $_DEBUG_VERBOSE > 0 && -z $PCSNIC ]]; then
+if [[ $_DEBUG_VERBOSE > 0 ]]; then
     echo -e "\n\e[1m\e[94m[*] Starting Debugging Mode in 10 seconds:\n\r\e[39m\e[0m"    
     sleep 10
     echo -e -n "\a\a"
-    tail -f -n 70 /var/log/syslog | grep -iE "$_PROX_ENGINE\["
+    if [[ $_PROX_ENGINE != "proxychains" ]]; then
+        tail -f -n 70 /var/log/syslog | grep -iE "$_PROX_ENGINE\["
+    else
+        tail -f ${TMP_CONF}/pchains.log
+    fi
 fi
 
 exit 0;
