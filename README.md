@@ -1,7 +1,14 @@
 ![Thumb](/img/unblock-version.gif)
-### A "Swiss Army proxy-knife" to avoid geoblocking in Video on Demand and censorship!
+### A "Swiss Army proxy-knife" to avoid geoblocking in Video on Demand and censorship in your whole network!
 
-# Background 
+# Background - Why this script?
+There are many devices in my network, which do not allow to set a proxy manually, I have always had to prepare my router or a computer, which was a lot of time and configuration effort.
+
+With this script, I have the possibility to offer a proxy in my whole network for desired domains. Even if DNS or transparent router.
+Furthermore I can choose which proxy engine should be used. 
+
+It couldn't be easier!
+
 This Script uses a List of (Free)-Proxies and Domains that allows you to set up unrestricted access to streaming content on your smart-TV, Kodi, Emby Mediaserver and other devices to watch your media region-free like:
 
     Zattoo
@@ -39,6 +46,10 @@ This Script uses a List of (Free)-Proxies and Domains that allows you to set up 
 
 #### SSH-Socks (for your own Socks-Proxy connection via SSH)
 
+#### Web-Backend (beta Version! Requires >=PHP 5.4.0 - For smart web-adminstration)
+
+![Thumb](/img/web-backend.PNG)
+
 # How to use the script
 
 ## !!!THIS VERSION IS BETA AND ONLY TESTED ON DEBIAN/UBUNTU SYSTEMS! SO PLEASE WRITE AN ISSUE IF YOU HAVE SOME TROUBLE HERE!!!
@@ -46,6 +57,8 @@ This Script uses a List of (Free)-Proxies and Domains that allows you to set up 
 ### 1. Clone and install the script (Minimal Requirements)
 ```
 sudo apt install iproute2 iptables git sniproxy dnsmasq 
+# If you wish to use the integrated Web-Server
+# apt install php
 
 git clone https://github.com/suuhm/unblock-proxy.sh /opt/unblock-proxy.sh
 chmod +x /opt/unblock-proxy.sh/unblock-proxy.sh && ln -s /opt/unblock-proxy.sh/unblock-proxy.sh /usr/bin/
@@ -120,6 +133,8 @@ Usage: unblock-proxy.sh main-mode proxy-engine [options]>
 	-o, --out-if=           Sets the out-interface Device.
 	-S, --ssh-socks         Set own Server as Parent Socks-Proxy over SSH-tunnel. 
                                 (Can't be use with tor-Engine!)
+	-w, --web-admin         Starts a small Webserver-Backend at Port 8383
+                                (Requires php framework >=5.4!)
 	-R, --reset             Resets all the IPTABLES and MASQ Entries.
 	-C, --proxycheck        Just scans/checks the Proxies in (/opt/unblock-proxy/proxies.lst).
 	
@@ -145,9 +160,9 @@ unblock-proxy.sh transparent --redsocks --debug
 unblock-proxy.sh transparent -r -d
 ```
 
-#### Using Smart DNS Mode with squid Engine and pull off Debug-infos
+#### Using Smart DNS Mode with squid Engine and pull off Debug-infos. Also start the Web-Backend Server
 ```
-unblock-proxy.sh dns --squid --debug
+unblock-proxy.sh dns --squid --debug --web-admin
 ```
 
 #### Using Smart DNS Mode with squid Engine, Using SSH-Socks Proxy and pull off Debug-infos
