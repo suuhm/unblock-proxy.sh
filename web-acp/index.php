@@ -61,9 +61,9 @@
   <body>
     <header>
   <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-    <a style="margin-left:3px" class="navbar-brand" href="#">unblock-proxy -Web! (beta.)</a>
+    <a style="margin-left:3px" class="navbar-brand" href="#">unblock-proxy -Web!</a>
     <div style="float:left"> </div>
-    <button id="countdown" class="btn btn-primary my-1" onClick="pauseRef()">Refresh Page</button>
+    <button id="countdown" class="btn btn-primary my-2" onClick="pauseRef()">Refresh Page</button>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -80,8 +80,7 @@
     </ol>
     <div class="carousel-inner">
       <div class="carousel-item active">
-        <!--
-        <svg class="" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img"><rect width="100%" height="100%" fill="#111"/></svg>
+        <!--<svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img"><rect width="100%" height="100%" fill="#111"/></svg>
         -->
         <center><img src="img/unblock-version.gif" /></center>
         <div class="container">
@@ -93,7 +92,7 @@
         </div>
       </div>
       <div class="carousel-item">
-        <center><img src="img/unblock-version.gif" /></center>
+        <center><img src="img/unblock-dns-squid.gif" /></center>
         <div class="container">
         </div>
       </div>
@@ -205,38 +204,9 @@ Proxy Engines:
   </footer>
   
 </main>
-<script>
-var stim;
-var remaining = 42;
-var tmp;
-var co = 1;
-pauseRef();
-/*(function countdown(remaining) {
-    if(remaining <= 0)
-        location.reload(true);
-    document.getElementById('countdown').innerHTML = "Reloading (Click to pause) (" + remaining +" )";
-    stim = setTimeout(function() { countdown(remaining - 1); }, 1000);
-})(42); // 5 seconds*/
+	<script src="toolsets.js"></script>
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script>window.jQuery || document.write('<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"><\/script>')</script>
+	<script src="js/bootstrap.bundle.min.js"></script>
 
-function pauseRef() {
-  	if (co == 1 && stim) {
-  	clearTimeout(stim);
-  	co = 0;
-  	remaining = tmp;
-	} else {
-	//countdown(remaining);
-	(function countdown(remaining) {
-    if(remaining <= 0)
-        location.reload(true);
-    document.getElementById('countdown').innerHTML = "Reloading (Click to pause) ( " + remaining + " )";
-    	tmp = remaining;
-    	stim = setTimeout(function(){ countdown(remaining - 1); }, 1000);
-	})(remaining);
-	}
-}
-
-</script>
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-      <script>window.jQuery || document.write('<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"><\/script>')</script><script src="js/bootstrap.bundle.min.js"></script>
 </html>
