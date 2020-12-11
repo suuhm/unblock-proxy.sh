@@ -250,6 +250,11 @@ _get_interfaces()
 _get_proxy()
 {
     _counter=0
+    _CHKURL="https://proxycheck.coldwareveryday.com"
+    if [[ -z $(curl -H "Content-Type: application/html" -H "User-Agent: unblock-proxy.sh/chk/net" $_CHKURL 2>/dev/null) ]]; then
+        echo "[!!] Network_error: No Proxycheckgateway found or $_CHKURL seems to be down?"
+        exit 167
+    fi
     
     if [[ -e $_PROXY_FILE && $_SSH_SOCKS < 1 ]]; then
         PROXY_ARRAY=`grep -v -E "^#|^$" $_PROXY_FILE`
@@ -261,7 +266,7 @@ _get_proxy()
             _PPROTO=`awk '{print $1}' <<<$PROX`
             #$(nc -w 7 -z -v $_PIP $_PPORT 2>&1 | grep open)
             printf "[~ $((_counter=$_counter+1))] Testing Proxy: $_PIP:$_PPORT $_PPROTO"
-            curl -m 32 --connect-timeout 70 -x $_PPROTO://$_PIP:$_PPORT -fsL https://proxycheck.coldwareveryday.com >/dev/null 2>&1
+            curl -m 32 --connect-timeout 42 -x $_PPROTO://$_PIP:$_PPORT -fsL $_CHKURL >/dev/null 2>&1
             
             if [[ $? == 0 ]]; then
                 printf " \e[32m[seems to work :)]\n[*] FOUND! ($_PIP)\n\e[39m\e[0m"
