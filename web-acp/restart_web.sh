@@ -4,7 +4,8 @@ echo
 echo "Kill and Restart..."
 
 _PID=`cat KID`
-_COM=`ps aux | grep $_PID | grep -v grep | awk '{ for(i=1;i<=NF;i++) {if ( i > 11 ) printf $i" "}; printf "\n" }'` 
+_COM=$_PID
+#_COM=`ps aux | grep $_PID | grep -v grep | awk '{ for(i=1;i<=NF;i++) {if ( i > 11 ) printf $i" "}; printf "\n" }'`
 #| sed 's/-w-web*//g'`
 
 kill $_PID 2>web-tail.log
