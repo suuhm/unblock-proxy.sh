@@ -209,10 +209,10 @@ _run_dnsmasq()
 _run_webserver()
 {     
     if [[ -e ${_WEBACP_DIR} && $(command -v php) && -z $(lsof -t -i:8383) ]]; then
-        echo $$ > ${_WEBACP_DIR}/KID
+        ps aux | grep $$ | grep -v grep | awk '{ for(i=1;i<=NF;i++) {if ( i > 11 ) printf $i" "}; printf "\n" }' > ${_WEBACP_DIR}/KID
         nohup php -S 0.0.0.0:8383 -t $_WEBACP_DIR >${_WEBACP_DIR}/web-acp.log 2>&1 &
     elif [[ $(lsof -t -i:8383) ]]; then
-        echo $$ > ${_WEBACP_DIR}/KID
+        ps aux | grep $$ | grep -v grep | awk '{ for(i=1;i<=NF;i++) {if ( i > 11 ) printf $i" "}; printf "\n" }' > ${_WEBACP_DIR}/KID
         echo "[!~] Webserver is still running. Continue.."
     else
         echo "[!!] $_WEBACP_DIR or php-Command not found!"
@@ -239,7 +239,7 @@ _get_interfaces()
         IIF=$IF_T 
         OIF=$IF_T
         #GET IP ADDRESS
-        IPADDR=$(ip addr show dev $OIF | grep global | awk '{print $2}' | cut -d '/' -f 1)
+        IPADDR=$(ip addr show dev $OIF | grep global | awk '{print $2}' | cut -d '/' -f 1 | head -n1)
         echo -e "\e[1m\e[94m[*] Setting up iface IN -> ($IIF) and OUT -> ($OIF) <==> ($IPADDR)\e[39m\e[0m"
     else
         echo "[!!] Network_error: No Interface found"
@@ -378,7 +378,8 @@ _set_smart_dns()
 {
     echo -e "\n\e[1m\e[94m[*] Setup SMART DNS PROXY\e[39m\e[0m"
     for DOM in $BL_ARRAY; do
-        [[ -z $(ping -c 1 $DOM 2>/dev/null) ]] && echo "!! $DOM seems to be down. Not set"
+        #alternate and faster if installed: fping -c1 -T400 $DOM
+        [[ -z $(ping -c 1 -i 0.1 -W 0.7 $DOM 2>/dev/null) ]] && echo "!! $DOM seems to be down. Not set"
         echo "-> Setting up Hostname: $DOM"
         echo "address=/$DOM/$IPADDR" >> $_DNS_CONF      
     done
@@ -521,7 +522,7 @@ if [[ $? != 4 && $? != 1 ]]; then
     exit 13
 fi
 
-_getopt=$(getopt -o tsrpio::SwRCvhd --long tor,squid,redsocks,proxychains,in-if::,out-if::ssh-socks,web-admin,reset,proxycheck,version,help,debug -n $_PROG -- "$@")
+_getopt=$(getopt -o tsrpi:o:SwRCvhd --long tor,squid,redsocks,proxychains,in-if::,out-if::,ssh-socks,web-admin,reset,proxycheck,version,help,debug -n $_PROG -- "$@")
 if [[ $? != 0 ]] ; then 
     echo "bad command line options" >&2 ; exit 14 ; 
 fi
@@ -555,21 +556,23 @@ while true; do
                     shift
                     ;;
             -i|--in-if)
-                    if [[ -z "$2" ]]; then
+                    if [[ -z $2 ]]; then
                         echo -e "Missing device\n" ; _usage
                         exit 15;
                     else
-                        IIF=$2; IF_MSET=1
+                        [[ -z $O ]] && unset OIF
+                        IIF=$2; IF_MSET=1; I=1
                         shift 2;
                     fi
                     continue 
                     ;;
             -o|--out-if)
-                    if [[ -z "$2" ]]; then
+                    if [[ -z $2 ]]; then
                         echo -e "Missing device\n" ; _usage
                         exit 16;
                     else
-                        OIF=$2; IF_MSET=1
+                        [[ -z $I ]] && unset IIF
+                        OIF=$2; IF_MSET=1; O=1
                         shift 2;
                     fi
                     continue 
@@ -614,8 +617,10 @@ fi
 if [[ -z $IF_MSET ]]; then
     _get_interfaces
 else
+    [[ -z $OIF ]] && OIF=$IIF 
+    [[ -z $IIF ]] && IIF=$OIF
     ## GET IP ADDRESS
-    IPADDR=$(ip addr show dev $OIF | grep global | awk '{print $2}' | cut -d '/' -f 1)
+    IPADDR=$(ip addr show dev $OIF | grep global | awk '{print $2}' | cut -d '/' -f 1 | head -n1)
     echo -e "\n\e[1m\e[94m[*] Setting up iface IN -> ($IIF) and OUT -> ($OIF) <=> ($IPADDR)\e[39m\e[0m" 
 fi
 
