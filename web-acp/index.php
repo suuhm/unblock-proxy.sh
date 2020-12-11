@@ -130,17 +130,17 @@
 	    //redirect
 	    //header(sprintf('Location: %s', $url));
 	    ?>
-	    <h3>Erfolgreich gespeichert!</h3> <br/><br>
+	    <h3>Successful saved and restarted, now you can go back!</h3> <br/><br>
 	    
-		<?php
+       <?php
 	    printf('<a href="%s">Back to acp</a>.', htmlspecialchars($url));
 	    $output = shell_exec('sh restart_web.sh');
-		echo "<pre>$output</pre>";
+	    echo "<pre>$output</pre>";
 	    exit();
 	}
 	$proxies = file_get_contents($fprox);
 	$domains = file_get_contents($fdoms);
-	$debug = shell_exec("tail -n 17 web-tail.log | grep -vE '\[.*m'");
+	$debug = shell_exec("tail -n 77 web-tail.log | grep -vE '\[.*m'");
 	?>	
 	
     <div class="row featurette">
