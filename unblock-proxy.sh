@@ -368,7 +368,7 @@ _set_transpa()
         echo -e " -> Setting up Hostname: $DOM"
         #DNS REDIRECT BY TOR NETWORK ONLY YET!
         #iptables -t nat -A PREROUTING -i $IIF -p udp -m multiport -d $DOM --dports 53,5533 -j $IJUMP --to-ports 5533
-        iptables -t nat -A PREROUTING -i $IIF -p tcp -m multiport -d $DOM --dports 80,443 -j $IJUMP
+        iptables -t nat -A PREROUTING -i $IIF -p tcp -m multiport -d $DOM --dports 80,443 -j $IJUMP 2>/dev/null
         #ROUTE ALL TRAFFIC WITH SYN FLAG
         #iptables -t nat -A PREROUTING -i $IIF -p tcp --syn -j REDIRECT --to-ports 4433  
     done        
@@ -378,7 +378,8 @@ _set_smart_dns()
 {
     echo -e "\n\e[1m\e[94m[*] Setup SMART DNS PROXY\e[39m\e[0m"
     for DOM in $BL_ARRAY; do
-        echo -e "-> Setting up Hostname: $DOM"
+        [[ -z $(ping -c 1 $DOM 2>/dev/null) ]] && echo "!! $DOM seems to be down. Not set"
+        echo "-> Setting up Hostname: $DOM"
         echo "address=/$DOM/$IPADDR" >> $_DNS_CONF      
     done
     
