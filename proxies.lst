@@ -1,7 +1,10 @@
 ## PROXIES YOU WANT TO USE
 #
-## ONE PROXY PER LINE!!
-## STYLE: [IP] [PORT] [PROTOCOL]
+## ONE PROXY PER LINE!! DELIMITER: (SPACE/TAB)
+## STYLE: [PROTOCOL] [IP] [PORT]
+
+## For colon-seperated proxy-lists you can use this snippet below:
+## cat colon-proxies-batch.txt | awk -F ":" '{print "socks5 " $1 " " $2}' >> /opt/unblock-proxy.sh/proxies.lst
 #
 ## POSSIBLE PROTOCOLS: socks4, socks5, http <-(HTTPS INCLUDES!)
 #
@@ -12,15 +15,9 @@
 #socks5 127.0.0.1 2228
 
 #SWISS SOCKS
-socks5 81.17.20.50 23523
-socks5 81.17.20.50 47127
-socks5 81.17.20.50 11016
-#socks5 185.180.40.70 9050
+#socks5 10.20.30.40 9050
 #SWISS-HTTP/S
-http 81.17.30.7 3128
-http 83.150.10.212 80
+#http 10.20.30.40 3128
 
 #USA
-socks4 148.77.34.200 54321
-
-
+#socks4 10.20.30.40 54321
