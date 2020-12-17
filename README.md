@@ -103,7 +103,7 @@ sudo ln -s ~/redsocks/redsocks /usr/bin/
 sudo apt install proxychains
 ```
 #### - windscribe
-To install this amazing vpn you need to create an account and follow these intsructions here: https://windscribe.com/guides/linux#how-to
+To install this amazing VPN you need to create an account and follow these instructions here: https://windscribe.com/guides/linux#how-to
 
 or
 ```
