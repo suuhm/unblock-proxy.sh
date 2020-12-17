@@ -41,6 +41,7 @@ _TOR_CONF=${_BASE_DIR}configs/torrc
 _SQUID_CONF=${_BASE_DIR}configs/squid.conf
 _REDSOCKS_CONF=${_BASE_DIR}configs/redsocks.conf
 _PCHAINS_CONF=${_BASE_DIR}configs/proxychains.conf
+_WS_COUNTRY=best
 
 _BL_FILE=${_BASE_DIR}domains.lst
 _PROXY_FILE=${_BASE_DIR}proxies.lst
@@ -69,6 +70,8 @@ _usage()
     -s, --squid             Activates the Squid Engine.
     -r, --redsocks          Activates the RedSocks Engine.
     -p, --proxychains       Activates the proxychains Engine.
+    -w, --windscribe=       Activates the windscribe Engine.
+                            (Optional set Country: --windscribe=US or -w US or without arguments!)
     
   options:
     
@@ -76,7 +79,7 @@ _usage()
     -o, --out-if=           Sets the out-interface Device.
     -S, --ssh-socks         Set own Server as Parent Socks-Proxy over SSH-tunnel.
                             (Can't be use with tor-Engine!)
-    -w, --web-admin         Starts a small Webserver-Backend at Port 8383
+    -W, --web-admin         Starts a small Webserver-Backend at Port 8383
                             (Requires php framework >=5.4!)
     -R, --reset             Resets all the IPTABLES and MASQ Entries.
     -C, --proxycheck        Just scans/checks the Proxies in ($_PROXY_FILE).
@@ -177,6 +180,21 @@ _run_proxychains()
         echo "[!!] Commands $BIN_CHKCH and $BIN_CHKSNI not found!"
         echo "Try to search/install like: apt-get install $BIN_CHKCH $BIN_CHKSNI"
         exit 115
+    fi
+}
+
+_run_windscribe()
+{
+    BIN_CHK=$(command -v windscribe)
+      
+    if [[ $BIN_CHK ]]; then
+    $BIN_CHK login && $BIN_CHK firewall off && $BIN_CHK connect $_WS_COUNTRY
+    echo "[*] Now you can watch your contingent and easily disconnect with: $BIN_CHK disconnect"
+    $BIN_CHK account
+    else
+        echo "[!!] Command $BIN_CHK not found!"
+        echo "Try to search/install like: apt-get install $BIN_CHK"
+        exit 116
     fi
 }
 
@@ -366,11 +384,16 @@ _set_transpa()
         
     for DOM in $BL_ARRAY; do
         echo -e " -> Setting up Hostname: $DOM"
-        #DNS REDIRECT BY TOR NETWORK ONLY YET!
+        #DNS REDIRECT BY TOR:5533 NETWORK ONLY YET!
         #iptables -t nat -A PREROUTING -i $IIF -p udp -m multiport -d $DOM --dports 53,5533 -j $IJUMP --to-ports 5533
-        iptables -t nat -A PREROUTING -i $IIF -p tcp -m multiport -d $DOM --dports 80,443 -j $IJUMP 2>/dev/null
-        #ROUTE ALL TRAFFIC WITH SYN FLAG
-        #iptables -t nat -A PREROUTING -i $IIF -p tcp --syn -j REDIRECT --to-ports 4433  
+        if [[ $_PROX_ENGINE == "windscribe" ]]; then
+            iptables -A FORWARD -i $IIF -o tun0 -p tcp -m multiport -d $DOM --dports 80,443 -j ACCEPT 2>/dev/null
+            #iptables -A FORWARD -i tun0 -o $IFF -m state --state ESTABLISHED,RELATED -j ACCEPT
+        else
+            iptables -t nat -A PREROUTING -i $IIF -p tcp -m multiport -d $DOM --dports 80,443 -j $IJUMP 2>/dev/null
+            #ROUTE ALL TRAFFIC WITH SYN FLAG
+            #iptables -t nat -A PREROUTING -i $IIF -p tcp --syn -j REDIRECT --to-ports 4433  
+        fi
     done        
 }
 
@@ -409,7 +432,7 @@ _set_ngin_conf()
     case "$_PROX_ENGINE" in                                            
             tor)                                   
                     #_run_tor; 
-                    ## SET TABLES
+                    ## SET TABLES:
                     IJUMP="REDIRECT --to-ports 4433"                       
                     ;;                                      
             squid)
@@ -433,7 +456,7 @@ _set_ngin_conf()
                         sed "s/\_SPORT\_/$_PPORT/g" -i $_SQUID_CONF
                     fi   
                     
-                    ## SET TABLES
+                    ## SET TABLES:
                     IJUMP="REDIRECT --to-ports 4433"                       
                     ;;                                      
             redsocks)  
@@ -467,7 +490,12 @@ _set_ngin_conf()
                     
                     ## SET TABLES: 
                     IJUMP="REDIRECT"                                                             
-                    ;;                                                                         
+                    ;;
+            windscribe)                                   
+                    ## SET TABLES:
+                    STUNNEL="yes" 
+                    IJUMP="ACCEPT"                      
+                    ;;                                                                                             
             *)
                     echo -e "BAD OPTION - PLS CHOOSE UR WARRIOR\n"                                                                  
                     _usage                                  
@@ -492,7 +520,10 @@ _start_ngin()
                     ;;                                      
             proxychains)                                     
                     _run_proxychains                                                   
-                    ;;                                                                         
+                    ;;
+            windscribe)                                     
+                    _run_windscribe                                                   
+                    ;;                                                                                             
             *)
                     echo "BAD OPTION - PLS CHOOSE UR WARRIOR"                                                                  
                     _usage                                  
@@ -522,7 +553,7 @@ if [[ $? != 4 && $? != 1 ]]; then
     exit 13
 fi
 
-_getopt=$(getopt -o tsrpi:o:SwRCvhd --long tor,squid,redsocks,proxychains,in-if::,out-if::,ssh-socks,web-admin,reset,proxycheck,version,help,debug -n $_PROG -- "$@")
+_getopt=$(getopt -o tsrpw:i:o:SWRCvhd --long tor,squid,redsocks,proxychains,windscribe::,in-if::,out-if::,ssh-socks,web-admin,reset,proxycheck,version,help,debug -n $_PROG -- "$@")
 if [[ $? != 0 ]] ; then 
     echo "bad command line options" >&2 ; exit 14 ; 
 fi
@@ -555,6 +586,16 @@ while true; do
                     _PROX_ENGINE="proxychains"  
                     shift
                     ;;
+            -w|--windscribe)
+                    OPTT=$1
+                    _PROX_ENGINE="windscribe"
+                    if [[ $2 =~ ^[A-Z]{2,3} ]]; then
+                        _WS_COUNTRY=$2
+                        shift 2
+                    else 
+                        [[ $OPTT == "-w" ]] && shift 2 || shift 3
+                    fi
+                    ;;
             -i|--in-if)
                     if [[ -z $2 ]]; then
                         echo -e "Missing device\n" ; _usage
@@ -581,7 +622,7 @@ while true; do
                     _SSH_SOCKS=1;
                     shift  
                     ;;
-            -w|--web-admin)
+            -W|--web-admin)
                     _RUN_WEB=1;
                     shift  
                     ;;
@@ -667,8 +708,8 @@ fi
 
 ## SET OPTIONAL SYSLOG DEBUGGING
 if [[ $_DEBUG_VERBOSE > 0 ]]; then
-    echo -e "\n\e[1m\e[94m[*] Starting Debugging Mode in 10 seconds:\n\r\e[39m\e[0m"    
-    sleep 10
+    echo -e "\n\e[1m\e[94m[*] Starting Debugging Mode in 3 seconds:\n\r\e[39m\e[0m"    
+    sleep 3
     echo -e -n "\a\a"
     if [[ $_PROX_ENGINE != "proxychains" ]]; then
         tail -f -n 70 /var/log/syslog | grep -iE "$_PROX_ENGINE\["
