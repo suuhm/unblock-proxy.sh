@@ -35,6 +35,7 @@ This Script uses a List of (Free)-Proxies and Domains that allows you to set up 
 - Squid (incl. Certcreator for SSL-Bump Functionality)
 - Redsocks
 - Proxychains
+- Windscribe (Requires an account: https://windscribe.com/signup)
 
 ![Thumb](/img/unblock-dns-redsocks.gif)
 
@@ -101,6 +102,14 @@ sudo ln -s ~/redsocks/redsocks /usr/bin/
 ```
 sudo apt install proxychains
 ```
+#### - windscribe
+To install this amazing vpn you need to create an account and follow these intsructions here: https://windscribe.com/guides/linux#how-to
+
+or
+```
+sudo wget https://windscribe.com/install/desktop/linux_deb_x64 -O /tmp/ws.deb
+sudo apt install --no-install-recommends /tmp/ws.deb
+```
 
 ### 3. Put your wished Proxy in the proxies.lst file. 
 #### (Please google for free proxy Server)
@@ -126,6 +135,8 @@ Usage: unblock-proxy.sh main-mode proxy-engine [options]>
 	-s, --squid             Activates the Squid Engine.
 	-r, --redsocks          Activates the RedSocks Engine.
 	-p, --proxychains       Activates the proxychains Engine.
+	-w, --windscribe=       Activates the windscribe Engine.
+                                (Optional set Country: --windscribe=US or -w US or without arguments!)
 	
   options:
 	
@@ -168,6 +179,11 @@ unblock-proxy.sh dns --squid --debug --web-admin
 #### Using Smart DNS Mode with squid Engine, Using SSH-Socks Proxy and pull off Debug-infos
 ```
 unblock-proxy.sh dns -s --ssh-socks --debug
+```
+
+#### Using Smart DNS Mode with windscribe Engine /w Thailand-IP and pull off Debug-infos
+```
+unblock-proxy.sh dns --windscribe=TH --debug
 ```
 
 #### Using Smart DNS Mode with proxychains Engine, using specific Network-Card and pull off Debug-infos
