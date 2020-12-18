@@ -227,10 +227,10 @@ _run_dnsmasq()
 _run_webserver()
 {     
     if [[ -e ${_WEBACP_DIR} && $(command -v php) && -z $(lsof -t -i:8383) ]]; then
-        ps aux | grep $$ | grep -v grep | awk '{ for(i=1;i<=NF;i++) {if ( i > 11 ) printf $i" "}; printf "\n" }' > ${_WEBACP_DIR}/KID
+        ps aux | grep $$ | grep -v grep | awk -F "/bin/bash" '{ for(i=1;i<=NF;i++) {if ( i > 1 ) printf $i" "}; printf "\n" }' > ${_WEBACP_DIR}/KID
         nohup php -S 0.0.0.0:8383 -t $_WEBACP_DIR >${_WEBACP_DIR}/web-acp.log 2>&1 &
     elif [[ $(lsof -t -i:8383) ]]; then
-        ps aux | grep $$ | grep -v grep | awk '{ for(i=1;i<=NF;i++) {if ( i > 11 ) printf $i" "}; printf "\n" }' > ${_WEBACP_DIR}/KID
+        ps aux | grep $$ | grep -v grep | awk -F "/bin/bash" '{ for(i=1;i<=NF;i++) {if ( i > 1 ) printf $i" "}; printf "\n" }' > ${_WEBACP_DIR}/KID
         echo "[!~] Webserver is still running. Continue.."
     else
         echo "[!!] $_WEBACP_DIR or php-Command not found!"
