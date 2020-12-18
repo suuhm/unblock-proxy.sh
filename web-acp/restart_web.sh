@@ -3,21 +3,21 @@
 echo
 echo "Kill and Restart..."
 
-_PID=`cat KID`
-_COM=$_PID
-#_COM=`ps aux | grep $_PID | grep -v grep | awk '{ for(i=1;i<=NF;i++) {if ( i > 11 ) printf $i" "}; printf "\n" }'`
+_PID=`head -n1 KID`
+_COM=`tail -n1 KID`
+#_COM=`ps aux | grep $_PID | grep -v grep | awk '{ for(i=1;i<=NF;i++) {if ( i > 11 ) printf $i" "}; printf "\n" }'` 
 #| sed 's/-w-web*//g'`
 
 kill $_PID 2>web-tail.log
 sleep 2
 #kill $(lsof -t -i:8383) #/dev/null 2>&1
-killall tail 2>>web-tail.log
-sleep 2
+#killall tail 2>>web-tail.log
 
 echo "Starting script PID: ($_PID)"
 #unblock-proxy.sh dns -p -d -w >web-sh.log 2>&1 &
 
 if [ -z $_COM ]; then
+    echo "[!!] Something failed.. start wird default command:"
     _COM="/usr/bin/unblock-proxy.sh dns -p -d"
 fi
 
