@@ -92,7 +92,7 @@
         </div>
       </div>
       <div class="carousel-item">
-        <center><img src="img/unblock-dns-squid.gif" /></center>
+        <center><img src="img/unblock-dns-version.gif" /></center>
         <div class="container">
         </div>
       </div>
