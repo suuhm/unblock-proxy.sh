@@ -227,10 +227,12 @@ _run_dnsmasq()
 _run_webserver()
 {     
     if [[ -e ${_WEBACP_DIR} && $(command -v php) && -z $(lsof -t -i:8383) ]]; then
-        ps aux | grep $$ | grep -v grep | awk -F "/bin/bash" '{ for(i=1;i<=NF;i++) {if ( i > 1 ) printf $i" "}; printf "\n" }' > ${_WEBACP_DIR}/KID
+        echo $$ > ${_WEBACP_DIR}/KID
+        ps -A -o pid,args | grep -E "^\ +$$\ " | grep -v grep | awk -F "/bin/bash " '{ for(i=1;i<=NF;i++) {if ( i > 1 ) printf $i" "}; printf "\n" }' >> ${_WEBACP_DIR}/KID
         nohup php -S 0.0.0.0:8383 -t $_WEBACP_DIR >${_WEBACP_DIR}/web-acp.log 2>&1 &
     elif [[ $(lsof -t -i:8383) ]]; then
-        ps aux | grep $$ | grep -v grep | awk -F "/bin/bash" '{ for(i=1;i<=NF;i++) {if ( i > 1 ) printf $i" "}; printf "\n" }' > ${_WEBACP_DIR}/KID
+        echo $$ > ${_WEBACP_DIR}/KID
+        ps -A -o pid,args | grep -E "^\ +$$\ " | grep -v grep | awk -F "/bin/bash " '{ for(i=1;i<=NF;i++) {if ( i > 1 ) printf $i" "}; printf "\n" }' >> ${_WEBACP_DIR}/KID
         echo "[!~] Webserver is still running. Continue.."
     else
         echo "[!!] $_WEBACP_DIR or php-Command not found!"
@@ -334,7 +336,7 @@ _kill_ngines()
 {
     #kill $(lsof -t -i:8383) #>/dev/null 2>&1
     for PID in tor squid privoxy redsocks proxychains sniproxy dnsmasq; do
-        TP=$(ps aux | grep -E "\ $PID|\/$PID" | grep -v grep | awk '{print $2}')
+        TP=$(ps -A -o pid,args | grep -E "\ $PID|\/$PID" | grep -v grep | awk '{print $1}')
         printf "\n[X] Killing process: $PID: "
         for I in $TP; do
             printf ">> kill pid -> $I "
@@ -712,9 +714,10 @@ if [[ $_DEBUG_VERBOSE > 0 ]]; then
     sleep 3
     echo -e -n "\a\a"
     if [[ $_PROX_ENGINE != "proxychains" ]]; then
-        tail -f -n 70 /var/log/syslog | grep -iE "$_PROX_ENGINE\["
+        [[ ! -f /var/log/syslog ]] && touch /var/log/syslog
+        tail -f -n 70 /var/log/syslog | grep -iE "$_PROX_ENGINE\[" | tee -a ${_WEBACP_DIR}/web-tail.log
     else
-        tail -f ${TMP_CONF}/pchains.log
+        tail -f ${TMP_CONF}/pchains.log | tee -a ${_WEBACP_DIR}/web-tail.log
     fi
 fi
 
