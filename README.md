@@ -1,5 +1,14 @@
 ![Thumb](/img/unblock-version.gif)
+
+[![Join Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/2tRn7GWTRm)
+[![Stars](https://img.shields.io/github/stars/suuhm/unblock-proxy.sh?color=gold&style=for-the-badge&logo=github)](https://github.com/suuhm/unblock-proxy.sh)
+[![Forks](https://img.shields.io/github/forks/suuhm/unblock-proxy.sh?color=silver&style=for-the-badge&logo=github)](https://github.com/suuhm/unblock-proxy.sh/network)
+[![Issues](https://img.shields.io/github/issues/suuhm/unblock-proxy.sh?color=red&style=for-the-badge&logo=github)](https://github.com/suuhm/unblock-proxy.sh/issues)
+[![PRs](https://img.shields.io/github/issues-pr/suuhm/unblock-proxy.sh?color=orange&style=for-the-badge&logo=github)](https://github.com/suuhm/unblock-proxy.sh/pulls)
+
 ### A "Swiss Army proxy-knife" to avoid geoblocking in Video on Demand and censorship in your whole network!
+
+>
 
 # Background - Why this script?
 There are many devices in my network, which do not allow to set a proxy manually, I have always had to prepare my router or a computer, which was a lot of time and configuration effort.
